@@ -30,7 +30,7 @@ class zcl_abap_string_set definition
         value(rv_size) type i.
     methods to_range
       changing
-        ct_range type standard table.
+        ct_range type range.
 
   private section.
     data mt_values type sorted table of string with unique key table_line.
@@ -75,55 +75,19 @@ CLASS ZCL_ABAP_STRING_SET IMPLEMENTATION.
 
   method to_range.
 
-    data lo_table type ref to cl_abap_tabledescr.
-    data lo_line type ref to cl_abap_datadescr.
-    data lo_structure type ref to cl_abap_structdescr.
     data lr_result type ref to data.
     data lv_value type string.
     data lx_conversion type ref to cx_sy_conversion_error.
-    field-symbols <result> type standard table.
+    field-symbols <result> type range.
     field-symbols <row> type any.
     field-symbols <sign> type ddsign.
     field-symbols <option> type ddoption.
     field-symbols <low> type any.
-    field-symbols <high> type any.
-
-    lo_table ?= cl_abap_typedescr=>describe_by_data( ct_range ).
-    lo_line = lo_table->get_table_line_type( ).
-    if lo_line->kind <> cl_abap_typedescr=>kind_struct.
-      lcx_error=>raise( 'Range line must be a structure with SIGN, OPTION, LOW and HIGH' ).
-    endif.
-    lo_structure ?= lo_line.
-    if lines( lo_structure->components ) <> 4.
-      lcx_error=>raise( 'Range line must have exactly SIGN, OPTION, LOW and HIGH' ).
-    endif.
 
     " Build a copy so a failed conversion never leaves the caller's range half-filled.
     create data lr_result like ct_range.
     assign lr_result->* to <result>.
     <result> = ct_range.
-    append initial line to <result> assigning <row>.
-    assign component 'SIGN' of structure <row> to <sign>.
-    if sy-subrc <> 0.
-      lcx_error=>raise( 'Range line must contain SIGN of type DDSIGN' ).
-    endif.
-    assign component 'OPTION' of structure <row> to <option>.
-    if sy-subrc <> 0.
-      lcx_error=>raise( 'Range line must contain OPTION of type DDOPTION' ).
-    endif.
-    assign component 'LOW' of structure <row> to <low>.
-    if sy-subrc <> 0.
-      lcx_error=>raise( 'Range line must contain LOW' ).
-    endif.
-    assign component 'HIGH' of structure <row> to <high>.
-    if sy-subrc <> 0.
-      lcx_error=>raise( 'Range line must contain HIGH' ).
-    endif.
-    if cl_abap_typedescr=>describe_by_data( <low> )->kind <> cl_abap_typedescr=>kind_elem
-      or cl_abap_typedescr=>describe_by_data( <high> )->kind <> cl_abap_typedescr=>kind_elem.
-      lcx_error=>raise( 'Range LOW and HIGH must be elementary fields' ).
-    endif.
-    delete <result> index lines( <result> ).
 
     loop at mt_values into lv_value.
       append initial line to <result> assigning <row>.
@@ -138,6 +102,7 @@ CLASS ZCL_ABAP_STRING_SET IMPLEMENTATION.
         lcx_error=>raise( |Cannot convert set value to range LOW: { lx_conversion->get_text( ) }| ).
       endtry.
     endloop.
+
     ct_range = <result>.
 
   endmethod.

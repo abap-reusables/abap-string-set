@@ -25,12 +25,12 @@ lo_set->delete( 'A' ).
 
 ## Range Conversion
 
-`to_range` accepts a standard range table with `SIGN` (type `DDSIGN`), `OPTION` (type `DDOPTION`) and elementary fields `LOW` and `HIGH`.
+`to_range` accepts any standard range table (`changing ct_range type range`).
 
 - Values are appended in string sort order with `SIGN = 'I'` and `OPTION = 'EQ'`.
 - Uses standard ABAP assignment conversion to the target `LOW` type (e.g. `range of string`, `range of i`, etc.).
 - Existing rows in the target table are preserved.
-- Invalid range structures or failed conversions raise an exception (`cx_no_check`) without modifying the target table.
+- Failed conversions raise an exception (`cx_no_check`) without modifying the target table.
 
 See the [string set unit tests](src/zcl_abap_string_set.clas.testclasses.abap) for typed ranges and error handling examples.
 

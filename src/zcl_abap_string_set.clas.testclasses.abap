@@ -10,9 +10,6 @@ class ltcl_string_set definition
     methods string_range for testing.
     methods integer_range for testing.
     methods conversion_error for testing.
-    methods invalid_ranges for testing.
-    methods assert_invalid_range
-      changing ct_range type standard table.
 endclass.
 
 class ltcl_string_set implementation.
@@ -148,61 +145,6 @@ class ltcl_string_set implementation.
     cl_abap_unit_assert=>assert_equals(
       act = lt_range
       exp = lt_expected ).
-  endmethod.
-
-  method invalid_ranges.
-    types:
-      begin of ty_wrong_names,
-        sign type ddsign,
-        option type ddoption,
-        wrong type string,
-        high type string,
-      end of ty_wrong_names,
-      begin of ty_short_option,
-        sign type ddsign,
-        option type c length 1,
-        low type string,
-        high type string,
-      end of ty_short_option,
-      begin of ty_deep_low,
-        sign type ddsign,
-        option type ddoption,
-        low type string_table,
-        high type string_table,
-      end of ty_deep_low,
-      begin of ty_two_fields,
-        k type string,
-        v type string,
-      end of ty_two_fields.
-    data lt_scalar type string_table.
-    data lt_wrong_names type standard table of ty_wrong_names.
-    data lt_short_option type standard table of ty_short_option.
-    data lt_deep_low type standard table of ty_deep_low.
-    data lt_two_fields type standard table of ty_two_fields.
-    assert_invalid_range( changing ct_range = lt_scalar ).
-    assert_invalid_range( changing ct_range = lt_wrong_names ).
-    assert_invalid_range( changing ct_range = lt_short_option ).
-    assert_invalid_range( changing ct_range = lt_deep_low ).
-    assert_invalid_range( changing ct_range = lt_two_fields ).
-  endmethod.
-
-  method assert_invalid_range.
-    data lo_set type ref to zcl_abap_string_set.
-    data lr_original type ref to data.
-    field-symbols <original> type standard table.
-    create data lr_original like ct_range.
-    assign lr_original->* to <original>.
-    <original> = ct_range.
-    lo_set = zcl_abap_string_set=>create( ).
-    lo_set->add( 'a' ).
-    try.
-      lo_set->to_range( changing ct_range = ct_range ).
-      cl_abap_unit_assert=>fail( 'Invalid range must be rejected' ).
-    catch lcx_error.
-    endtry.
-    cl_abap_unit_assert=>assert_equals(
-      act = ct_range
-      exp = <original> ).
   endmethod.
 
 endclass.
